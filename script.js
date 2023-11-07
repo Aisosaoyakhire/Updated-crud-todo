@@ -116,9 +116,11 @@ function displayTasks() {
     taskItem.className =
       "list-item flex items-center justify-between border-b border-gray-300 drop-shadow-lg shadow-red py-2";
     taskItem.innerHTML = `
-    <div class="flex justify-between">
-                
-                <div>
+    <div class="flex justify-between cursor-pointer group" >
+               <button class = "hidden group-hover:block"  onclick = "toPreview('${
+                 task.uuid
+               }')">Preview Task</button> 
+                <div class = "group-hover:hidden">
                     <input type="checkbox" class="mr-2  form-checkbox" ${
                       task.completed ? "checked" : ""
                     } onclick="toggleTask('${task.uuid}')">
@@ -146,33 +148,32 @@ function displayTasks() {
   });
 }
 
-// Edit task
 function editTask(index) {
-  console.log(index, "index");
   let task = tasks.find((todo) => todo.uuid == index);
-  console.log("task", task);
-  const updatedText = prompt("Edit the task:", task.text);
-  if (updatedText !== null) {
-    tasks.find((todo) => todo.uuid == index).text = updatedText;
 
-    Swal.fire({
-      title: "Do you want to save the changes?",
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: "Save",
-      denyButtonText: `Don't save`,
-    }).then((result) => {
-      /* Read more about isConfirmed, isDenied below */
-      if (result.isConfirmed) {
-        Swal.fire("Saved!", "", "success");
-      } else if (result.isDenied) {
-        Swal.fire("Changes are not saved", "", "info");
-      }
-    });
+  Swal.fire({
+    title: "Do you want to save the changes?",
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: "Save",
+    denyButtonText: `Don't save`,
+    input: "text",
+    inputValue: task.text,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire("Saved!", "", "success");
+      tasks.find((todo) => todo.uuid == index).text = result.value;
+      saveTasks();
+      displayTasks();
+    } else if (result.isDenied) {
+      Swal.fire("Changes are not saved", "", "info");
+    }
+  });
+}
 
-    saveTasks();
-    displayTasks();
-  }
+function toPreview(uuid) {
+  localStorage.setItem("taskUuid", uuid);
+  window.location.href = "./preview.html";
 }
 // Load tasks when the page loads
 loadTasks();
